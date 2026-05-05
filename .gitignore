@@ -1,0 +1,12 @@
+
+venv/
+.venv/
+
+
+__pycache__/
+*.pyc
+
+
+data/fotos/*.jpg
+
+ia/models/*.h5
