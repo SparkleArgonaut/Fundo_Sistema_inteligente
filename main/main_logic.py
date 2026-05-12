@@ -9,15 +9,26 @@ if ruta_raiz not in sys.path:
 from ia.coffee_processor import procesar_y_guardar_diagnostico
 
 def ejecutar_sistema():
-    ruta_imagen = os.path.join(ruta_raiz, "data", "fotos", "test_ia.jpg")
-
-    print("\n--- SISTEMA FUNDO BERLÍN ---")
-
-    if not os.path.exists(ruta_imagen):
-        print(f"ERROR: Imagen no encontrada en: {ruta_imagen}")
+    carpeta_fotos = os.path.join(ruta_raiz, "data", "fotos")
+    
+    # Obtener la imagen más reciente
+    imagenes = [
+        os.path.join(carpeta_fotos, f) 
+        for f in os.listdir(carpeta_fotos) 
+        if f.lower().endswith(('.jpg', '.jpeg', '.png'))
+    ]
+    
+    if not imagenes:
+        print("ERROR: No hay imágenes en la carpeta")
         return
-
+    
+    ruta_imagen = max(imagenes, key=os.path.getmtime)
+    print(f"\n--- SISTEMA FUNDO BERLÍN ---")
+    print(f"Imagen detectada: {os.path.basename(ruta_imagen)}")
+    
     procesar_y_guardar_diagnostico(ruta_imagen)
+
+
 
 if __name__ == "__main__":
     ejecutar_sistema()
