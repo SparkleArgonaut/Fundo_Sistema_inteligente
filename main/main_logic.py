@@ -1,54 +1,23 @@
-import sys
 import os
-import sqlite3
+import sys
 
-# --- BLOQUE DE RUTA DINÁMICA ---
-# no se muy bien que pasa acá pero sin esto no jala
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if BASE_DIR not in sys.path:
-    sys.path.append(BASE_DIR)
-# ------------------------------
+# Rutas
+ruta_raiz = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ruta_raiz not in sys.path:
+    sys.path.insert(0, ruta_raiz)
 
-#buscar en la carpeta ia la funcion de roya
-try:
-    from ia.coffee_processor import diagnosticar_roya
-    print("modulo de ia cargado")
-except ImportError as e:
-    print(f"no aparece la carpeta 'ia' en {BASE_DIR}")
-    sys.exit(1)
+from ia.coffee_processor import procesar_y_guardar_diagnostico
 
+def ejecutar_sistema():
+    ruta_imagen = os.path.join(ruta_raiz, "data", "fotos", "test_ia.jpg")
 
+    print("\n--- SISTEMA FUNDO BERLÍN ---")
 
-def ejecutar_ciclo_control():
-   
-    ruta_foto = os.path.join(BASE_DIR, "data", "fotos", "captura_actual.jpg")
-    ruta_db = os.path.join(BASE_DIR, "data", "DB_database.db")
+    if not os.path.exists(ruta_imagen):
+        print(f"ERROR: Imagen no encontrada en: {ruta_imagen}")
+        return
 
-    try:
-        conn = sqlite3.connect(ruta_db)
-        cursor = conn.cursor()
-        
-        print("consultando sensores...")
-        print("analizando imagen del cultivo...")
-        
-        
-        resultado, confianza = diagnosticar_roya(ruta_foto)
-        print(f"sincronizando: {resultado} ({confianza:.2%})")
-
-        
-        cursor.execute("""
-            INSERT INTO analisis_vision (id_lectura, resultado_ia, confianza_ia, ruta_imagen) 
-            VALUES (?, ?, ?, ?)
-        """, (1, resultado, confianza, ruta_foto))
-        
-        conn.commit()
-        print("correcto: se guarda registro con respaldo")
-
-    except Exception as e:
-        print(f"ERROR en: {e}")
-    finally:
-        if 'conn' in locals():
-            conn.close()
+    procesar_y_guardar_diagnostico(ruta_imagen)
 
 if __name__ == "__main__":
-    ejecutar_ciclo_control()
+    ejecutar_sistema()
