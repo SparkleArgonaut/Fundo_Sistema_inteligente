@@ -1,0 +1,7 @@
+tflite-runtime
+opencv-python-headless
+pillow
+flask
+flask-cors
+schedule
+RPi.GPIO
