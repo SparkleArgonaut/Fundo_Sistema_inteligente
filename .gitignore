@@ -9,4 +9,8 @@ __pycache__/
 
 data/fotos/*.jpg
 
-ia/models/*.h5
+ia/models/*.h5data/DB_database.db
+data/data/
+__pycache__/
+.venv/
+*.pyc

@@ -1,6 +1,6 @@
 import sqlite3
 import os
-
+import sys
 # Configuración de rutas relativas (Subiendo un nivel desde /ia o /database)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "..", "data", "DB_database.db")
