@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 from datetime import datetime
 import os
+from picamera2 import Picamera2
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # --- RUTAS ---
@@ -66,45 +67,47 @@ def tomar_foto():
 # ─────────────────────────────────────────
 # 2. SENSOR DE SUELO
 # ─────────────────────────────────────────
+
 def leer_sensor():
+    import board
+    import busio
+    from adafruit_ads1x15.ads1115 import ADS1115
+    from adafruit_ads1x15.analog_in import AnalogIn
+    
     try:
-        import RPi.GPIO as GPIO
-        PIN = 11
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(PIN, GPIO.IN)
-        valor  = GPIO.input(PIN)
-        GPIO.cleanup()
-        estado = "Seco" if valor == 1 else "Humedo"
-        print(f"[Sensor] {estado} (señal: {valor})")
-
-    except ImportError:
-        import random
-        valor  = random.choice([0, 1])
-        estado = "Seco" if valor == 1 else "Humedo"
-        print(f"[Sensor simulado] {estado} (señal: {valor})")
-
+        i2c = busio.I2C(board.SCL, board.SDA)
+        ads = ADS1115(i2c)
+        canal = AnalogIn(ads, 0)
+        voltaje = canal.voltage
+        
+        # Calibración: 2.63V (0%), 1.2V (100%)
+        voltaje_max = 2.63
+        voltaje_min = 1.2
+        
+        porcentaje = ((voltaje_max - voltaje) / (voltaje_max - voltaje_min)) * 100
+        porcentaje = max(0, min(100, porcentaje))  # Limitar entre 0 y 100
+        
+        estado = "Seco" if porcentaje < 30 else "Húmedo" if porcentaje < 70 else "Muy Húmedo"
+        valor = int(porcentaje)
+        
+        print(f"[Sensor] {porcentaje:.1f}% - {estado} ({voltaje:.2f}V)")
+    except:
+        porcentaje = 50
+        valor = 50
+        estado = "Simulado"
+        print(f"[Sensor simulado] {porcentaje}% - {estado}")
+    
     try:
-        conn   = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS lecturas_sensor (
-                id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                fecha_hora  TIMESTAMP DEFAULT (datetime('now','localtime')),
-                estado_suelo TEXT,
-                valor_raw   INTEGER
-            )
-        """)
-        cursor.execute(
-            "INSERT INTO lecturas_sensor (estado_suelo, valor_raw) VALUES (?, ?)",
-            (estado, valor)
-        )
+        cursor.execute("INSERT INTO lecturas_sensor (estado_suelo, valor_raw) VALUES (?, ?)", (estado, valor))
         conn.commit()
         conn.close()
-        print("[Sensor] Guardado en DB OK")
-    except Exception as e:
-        print(f"Error BD sensor: {e}")
-
+    except:
+        pass
+    
     return estado, valor
+
 
 
 def registrar_alerta(tipo, mensaje):

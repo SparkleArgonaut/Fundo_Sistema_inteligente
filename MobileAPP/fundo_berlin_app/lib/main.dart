@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 // ← Cambia esta IP por la de tu PC cuando pruebes desde el celular
-const String API_BASE = 'http://192.168.1.104:5000';
+const String API_BASE = 'http://192.168.1.105:8080';
 
 void main() {
   runApp(const FundoBerlinApp());

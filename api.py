@@ -94,7 +94,19 @@ def lotes():
         "humedad":            sensor["estado_suelo"] if sensor else "Desconocido",
         "ultimo_diagnostico": analisis["resultado_ia"] if analisis else "Sin datos"
     }])
+import mimetypes
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('application/wasm', '.wasm')
 
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_flutter(path):
+    flutter_dir = '/home/daniel/Fundo_Sistema_inteligente/MobileAPP/fundo_berlin_app/build/web'
+    if path and os.path.exists(os.path.join(flutter_dir, path)):
+        return app.send_static_file(path)
+    return app.send_static_file('index.html')
+
+app.static_folder = '/home/daniel/Fundo_Sistema_inteligente/MobileAPP/fundo_berlin_app/build/web'
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
